@@ -195,11 +195,80 @@ def dashboard():
     return render_template("backend/home/dashbaord.html", user=current_user)
 
 
+@bp.route("/profile")
+@login_required
+def profile():
+    return render_template(
+        "backend/pages/components/users/profile.html",
+        user=current_user
+    )
+
+@bp.route("/account-settings", methods=["GET", "POST"])
+@login_required
+def account_settings():
+
+    if request.method == "POST":
+
+        data = {
+            "fullname": request.form.get("fullname"),
+            "username": request.form.get("username"),
+            "phone": request.form.get("phone"),
+            "country": request.form.get("country"),
+            "state": request.form.get("state"),
+            "city": request.form.get("city"),
+            "address": request.form.get("address"),
+            "bio": request.form.get("bio"),
+            "updated_at": datetime.utcnow()
+        }
+
+        # ================= PHOTO UPLOAD =================
+        file = request.files.get("photo")
+
+        if file and file.filename:
+
+            project_root = os.path.abspath(os.getcwd())
+
+            upload_dir = os.path.join(
+                project_root,
+                "static",
+                "backend",
+                "uploads",
+                "users"
+            )
+
+            os.makedirs(upload_dir, exist_ok=True)
+
+            filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename)}"
+            file_path = os.path.join(upload_dir, filename)
+
+            file.save(file_path)
+
+            photo_path = f"backend/uploads/users/{filename}"
+
+            data["photo"] = photo_path
+
+        # ================= UPDATE USER =================
+        mongo.db.users.update_one(
+            {"_id": ObjectId(current_user.id)},
+            {"$set": data}
+        )
+
+        flash("Account updated successfully.", "success")
+        return redirect(url_for("main.account_settings"))
+
+    return render_template(
+        "backend/pages/components/users/account_settings.html",
+        user=current_user
+    )
+
+
+
+
 @bp.route('/add-user', methods=['GET', 'POST'])
 @login_required
 def add_user():
 
-    if current_user.role != 'superadmin':
+    if current_user.role not in ['superadmin', 'admin']:
         return abort(403)
 
     countries = [
@@ -291,7 +360,7 @@ def add_user():
 @bp.route('/edit-user/<user_id>', methods=['GET', 'POST'])
 @login_required
 def edit_user(user_id):
-    if current_user.role != 'superadmin':
+    if current_user.role not in ['superadmin', 'admin']:
         return abort(403)
 
     raw_user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
@@ -386,7 +455,7 @@ def edit_user(user_id):
 @bp.route('/delete-user/<user_id>', methods=['POST'])
 @login_required
 def delete_user(user_id):
-    if current_user.role != 'superadmin':
+    if current_user.role not in ['superadmin', 'admin']:
         return abort(403)
 
     # 1. Get user
@@ -445,7 +514,7 @@ def all_users():
 @login_required
 def add_category():
 
-    if current_user.role != 'superadmin':
+    if current_user.role not in ['superadmin', 'admin']:
         return abort(403)
 
     if request.method == 'POST':
@@ -509,6 +578,9 @@ def add_category():
 @bp.route('/all/categories')
 @login_required
 def all_categories():
+    if current_user.role not in ['superadmin', 'admin']:
+        return abort(403)
+
 
     categories = mongo.db.categories.find().sort("created_at", -1)
 
@@ -526,7 +598,7 @@ def all_categories():
 @login_required
 def edit_category(category_id):
 
-    if current_user.role != 'superadmin':
+    if current_user.role not in ['superadmin', 'admin']:
         return abort(403)
 
     category = mongo.db.categories.find_one({
@@ -608,7 +680,7 @@ def edit_category(category_id):
 @login_required
 def delete_category(category_id):
 
-    if current_user.role != 'superadmin':
+    if current_user.role not in ['superadmin', 'admin']:
         return abort(403)
 
     category = mongo.db.categories.find_one({
@@ -654,7 +726,7 @@ def delete_category(category_id):
 @login_required
 def add_product():
 
-    if current_user.role != 'superadmin':
+    if current_user.role not in ['superadmin', 'admin']:
         return abort(403)
 
     categories = [
@@ -775,7 +847,7 @@ def add_product():
 @login_required
 def all_products():
 
-    if current_user.role != 'superadmin':
+    if current_user.role not in ['superadmin', 'admin']:
         return abort(403)
 
     products = []
@@ -808,7 +880,7 @@ def all_products():
 @login_required
 def edit_product(product_id):
 
-    if current_user.role != 'superadmin':
+    if current_user.role not in ['superadmin', 'admin']:
         return abort(403)
 
     product = mongo.db.products.find_one({
@@ -925,7 +997,7 @@ def edit_product(product_id):
 @login_required
 def delete_product(product_id):
 
-    if current_user.role != 'superadmin':
+    if current_user.role not in ['superadmin', 'admin']:
         return abort(403)
 
     product = mongo.db.products.find_one({

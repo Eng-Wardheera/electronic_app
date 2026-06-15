@@ -18,7 +18,7 @@
                    
 
                     <!-- ================= ADMIN ================= -->
-                     {% if current_user.role in ['superadmin'] %}
+                     {% if current_user.role in ['superadmin','admin'] %}
                         <li class="nxl-item nxl-hasmenu">
                             <a href="{{ url_for('main.dashboard') }}" class="nxl-link">
                                 <span class="nxl-micon"><i class="feather-airplay"></i></span>

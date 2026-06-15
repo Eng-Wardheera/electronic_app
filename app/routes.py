@@ -189,7 +189,7 @@ def forbidden(error):
 @bp.route("/dashboard")
 @login_required
 def dashboard():
-    if current_user.role not in ['superadmin']:
+    if current_user.role not in ['superadmin', 'admin']:
         return abort(403) # ama redirect(url_for('login'))
         
     return render_template("backend/home/dashbaord.html", user=current_user)

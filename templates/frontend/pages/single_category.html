@@ -227,9 +227,17 @@ body{
     <a href="javascript:history.back()" class="back">← Back</a>
 
     <div class="header">
-        <h2>{{ category.name }}</h2>
-        <p>Available Products</p>
-    </div>
+    <h2>{{ category.name }}</h2>
+    <p>
+        {% if product_count == 0 %}
+            No products available
+        {% elif product_count == 1 %}
+            1 Product Available
+        {% else %}
+            {{ product_count }} Products Available
+        {% endif %}
+    </p>
+</div>
 
     <!-- SEARCH -->
     <div class="search-box">

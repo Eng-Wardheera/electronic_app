@@ -79,10 +79,14 @@ def single_category(category_id):
         })
     ]
 
+    # Halkan ku dar tirada
+    product_count = len(products)
+
     return render_template(
         "frontend/pages/single_category.html",
         category=Category(category),
-        products=products
+        products=products,
+        product_count=product_count
     )
 
 
